@@ -20,7 +20,6 @@ void tokenizeInputs(string line, const char* delim, vector<string> &tokens){
 }
 
 void processInvocations(string line, RedBlackTree* rbt){
-	cout<<"init"<<endl;
 	vector<string> invocations; 
 	string invocation; 
 	string value;
@@ -48,7 +47,7 @@ int descToValue(string desc){
 }
 
 int numOfReadersWriters(string desc){
-	int num = stoi(desc.substr(desc.length()-1,1));
+	int num = stoi(desc.substr(15,desc.length()-15));
 	return num;
 }
 
@@ -58,29 +57,29 @@ int descToColor(string desc){
 }
 
 
-node* makeNode(string desc){
+Node* makeNode(string desc){
 	if(desc == "f") {
 		return NULL;
 	}
 	int value = descToValue(desc);
-	node* node = new struct node(value);
+	Node* node = new struct Node(value);
 	setNodeColor(node, descToColor(desc));
 	return node;
 }
 
-node* constructRBTFromPreOrder(vector<string> &preOrderVector){
+Node* constructRBTFromPreOrder(vector<string> &preOrderVector, RedBlackTree *rbt){
 	if(preOrderVector.size()==0)
-		return NULL;
-	struct node* root = makeNode(preOrderVector[0]);
+		return rbt->getNullNode();
+	struct Node* root = makeNode(preOrderVector[0]);
 	vector<string> left_preorder;
 	vector<string> right_preorder;
 	int i = 1; 
 	if(preOrderVector[i].size() == 1){
-		root->left = NULL;
+		rbt->addNullLeftChild(root);
 		i++;
 	}
 	if(preOrderVector[i].size() == 1){
-		root->right = NULL;
+		rbt->addNullRightChild(root);
 		i++;
 		return root;
 	}
@@ -90,8 +89,12 @@ node* constructRBTFromPreOrder(vector<string> &preOrderVector){
 	while(i < preOrderVector.size()){
 		right_preorder.push_back(preOrderVector[i++]);
 	}
-	root->left = constructRBTFromPreOrder(left_preorder);
-	root->right = constructRBTFromPreOrder(right_preorder);
+	struct Node* left = constructRBTFromPreOrder(left_preorder, rbt);
+	root->left = left;
+	left->parent = root;
+	struct Node* right = constructRBTFromPreOrder(right_preorder, rbt);
+	root->right = right;
+	right->parent = root;
 	return root;
 
 }
@@ -108,22 +111,15 @@ RedBlackTree* parseInput(){
 	string preOrderString = input[0];
 	vector<string> preOrderVector;
 	tokenizeInputs(preOrderString, ",", preOrderVector);
-	/*
-	for(int i =0; i < preOrderVector.size();i++){
-		cout<< preOrderVector[i] <<endl;
-	}
-	*/
-	struct node* root = constructRBTFromPreOrder(preOrderVector);
 	RedBlackTree* rbt = new RedBlackTree();
+	struct Node* root = constructRBTFromPreOrder(preOrderVector, rbt);
 	rbt->setRoot(root);
 	rbt->setNumReaders(numOfReadersWriters(input[1]));
 	rbt->setNumWriters(numOfReadersWriters(input[2]));
-	cout<<"before"<<endl;
 	for(int i = 3; i < input.size(); i++){
 		line = input[i];
 		processInvocations(line, rbt);
 	}
-	cout<<"after"<<endl;
 	return rbt;
 
 

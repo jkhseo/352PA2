@@ -5,42 +5,53 @@
 #include<queue>
 using namespace std;
 
-typedef struct node{
+struct Node{
 	int value;
 	int color;
-	node *left;
-	node *right;
-	node *parent;
+	Node *left;
+	Node *right;
+	Node *parent;
 
-	explicit node(int);
+	explicit Node(int);
+	explicit Node();
 		
-} node;
+};
+
+typedef Node *NodePtr;
 
 
 class RedBlackTree{
 	private:
-		node *root;
+		NodePtr  root;
+		NodePtr  null;
 		int num_Readers;
 		int num_Writers;
 		queue<int> searchQueue;
 		queue<string> modifyQueue;
 	protected:
-		void fixInsertNode(node *&);
-		void rotateLeft(node *&);
-		void rotateRight(node *&);
-		void fixDeleteNode(node *&);
-		node* deleteNodeHelper(node *&, int);
-		void deleteNode(int);
-		node* getMinValueNode(node *&);
-		node* getMaxValueNode(node *&);
-		void inOrderTraversal(node *&);
-		void preOrderTraversal(node *&);
+		void fixInsertNode(NodePtr  );
+		void rotateLeft(NodePtr  );
+		void rotateRight(NodePtr  );
+		void fixDeleteNode(NodePtr  );
+		void deleteNodeHelper(NodePtr  , int);
+		Node* getMinValueNode(NodePtr  );
+		Node* getMaxValueNode(NodePtr  );
+		void inOrderTraversal(NodePtr  );
+		void preOrderTraversal(NodePtr  );
+		Node* getNode(NodePtr  , int);
+		void rbTransplant(NodePtr   , NodePtr  );
+		void printHelper(NodePtr  , string , bool );
 
 	public:
+		Node* getNullNode();
+		void addNullLeftChild(NodePtr  );
+		void addNullRightChild(NodePtr  );
+		void prettyPrint();
 		bool searchNode(int);
-		void setRoot(node *&);
+		void setRoot(NodePtr  );
 		RedBlackTree();
 		void insertNode(int);
+		void deleteNode(int);
 		void inOrder();
 		void preOrder();
 		void setNumReaders(int);
@@ -51,8 +62,14 @@ class RedBlackTree{
 		queue<string> getModifyQueue();
 		void addSearchInvocation(int);
 		void addModifyInvocation(string);
+		int popSearchInvocation();
+		string popModifyInvocation();
+		bool searchQueueEmpty();
+		bool modifyQueueEmpty();
+		int getModifyQueueSize();
+		int getSearchQueueSize();
 };
 
-void setNodeColor(node *&, int);
-int getNodeColor(node *&);
+void setNodeColor(NodePtr  , int);
+int getNodeColor(NodePtr  );
 #endif 

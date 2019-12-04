@@ -8,15 +8,14 @@
 
 using namespace std;
 
-enum Color {RED, BLACK, DOUBLE_BLACK};
+enum Color {RED, BLACK};
 
-
-int getNodeColor(node *&node){
+int getNodeColor(NodePtr node){
 	if(node == NULL) return BLACK;
 	return node->color;
 }
 
-void setNodeColor(node *&node, int color) {
+void setNodeColor(NodePtr node, int color) {
     if (node == NULL){
         return;
     }
@@ -24,7 +23,7 @@ void setNodeColor(node *&node, int color) {
 }
 
 
-node::node(int value){
+Node::Node(int value){
 	this->value = value;
 	color = RED;
 	parent = NULL;
@@ -32,8 +31,87 @@ node::node(int value){
 	right = NULL;
 }
 
+Node::Node(){
+}
+
+NodePtr RedBlackTree::getNullNode(){
+	return this->null;
+}
+
+void RedBlackTree::printHelper(NodePtr root, string indent, bool last){
+	if (root != null) {
+		   cout<<indent;
+    if (last) {
+        cout<<"R----";
+        indent += "     ";
+    }   
+    else {
+        cout<<"L----";
+        indent += "|    ";
+    }
+            
+   string sColor = root->color? "BLACK":"RED";
+   cout<<root->value<<"("<<sColor<<")"<<endl;
+   printHelper(root->left, indent, false);
+   printHelper(root->right, indent, true);
+ }
+		
+}
+
+
+void RedBlackTree::rbTransplant(NodePtr n1, NodePtr n2){
+	if (n1->parent == NULL) {
+			root = n2;
+		} else if (n1 == n1->parent->left){
+			n1->parent->left = n2;
+		} else {
+			n1->parent->right = n2;
+		}
+		n2->parent = n1->parent;
+}
+
+void RedBlackTree::prettyPrint() {
+	    if (root) {
+    		printHelper(this->root, "", true);
+	    }
+	}
+
+int RedBlackTree::getSearchQueueSize(){
+	return this->searchQueue.size();
+}
+int RedBlackTree::getModifyQueueSize(){
+	return this->modifyQueue.size();
+}
+
+
+bool RedBlackTree::searchQueueEmpty(){
+	if(this->searchQueue.empty()) return true;
+	return false;
+}
+
+bool RedBlackTree::modifyQueueEmpty(){
+	if(this->modifyQueue.empty()) return true;
+	return false;
+}
+
+
+int RedBlackTree::popSearchInvocation(){
+	if(this->searchQueueEmpty()) return INT_MIN;
+	int value = this->searchQueue.front();
+	this->searchQueue.pop();
+	return value;
+}
+
+
+
+string RedBlackTree::popModifyInvocation(){
+	string value = this->modifyQueue.front();
+	this->modifyQueue.pop();
+	return value;
+}
+
 bool RedBlackTree::searchNode(int value){
-	struct node* node = root;
+	NodePtr node = root;
 	while(node != NULL){
 		if(value > node->value){
 			node = node->right;
@@ -64,302 +142,321 @@ void RedBlackTree::addModifyInvocation(string next){
 }
 
 RedBlackTree::RedBlackTree(){
-	root = NULL;
+	null = new Node;
+	null->color = BLACK;
+	null->left = NULL;
+	null->right = NULL;
+	root = null;
 }
 
-void RedBlackTree::setRoot(node *&node){
+void RedBlackTree::setRoot(NodePtr node){
 	this->root = node;
 }
 
-node* RedBlackTree::getMinValueNode(node *&node){
-	struct node* temp = node;
-	while(temp->left != NULL){
+NodePtr RedBlackTree::getMinValueNode(NodePtr node){
+	NodePtr temp = node;
+	while(temp->left != null){
 		temp = temp->left;
 	}
 	return temp;
 }
 
-node* RedBlackTree::getMaxValueNode(node *&node){
-	struct node* temp = node;
-	while(temp->right != NULL){
+NodePtr RedBlackTree::getMaxValueNode(NodePtr node){
+	NodePtr temp = node;
+	while(temp->right != null){
 		temp = temp->right;
 	}
 	return temp;
 }
 
-void RedBlackTree::rotateLeft(node *&node){
-	struct node* rChild = node->right;
+void RedBlackTree::addNullLeftChild(NodePtr  node){
+	node->left = null;
+}
+
+void RedBlackTree::addNullRightChild(NodePtr  node){
+	node->right = null;
+}
+
+void RedBlackTree::rotateLeft(NodePtr node){
+	NodePtr rChild = node->right;
 	node->right = rChild->left;
-
-	if(node->right != NULL) node->right->parent = node;
-
-	rChild->parent = node->parent;
-
-	if(node->parent == NULL){
-		root = rChild;
-	}
-	else if(node == node->parent->left){
-		node->parent->left = rChild;
-	}
-	else{
-		node->parent->right = rChild;
-	}
-
-	rChild->left = node;
-	node->parent = rChild;
-}
-
-void RedBlackTree::rotateRight(node *&node){
-	struct node* lChild = node->left;
-
-	if(node->left != NULL) node->left->parent = node;
-
-	lChild->parent = node->parent;
-
-	if(node->parent == NULL){
-		root = lChild;
-	}
-	else if(node == node->parent->left){
-		node->parent->left = lChild;
-	}
-	else{
-		node->parent->right = lChild;
+		if (rChild->left != null) {
+			rChild->left->parent = node;
+		}
+		rChild->parent = node->parent;
+		if (node->parent == NULL) {
+			this->root = rChild;
+		} else if (node == node->parent->left) {
+			node->parent->left = rChild;
+		} else {
+			node->parent->right = rChild;
+		}
+		rChild->left = node;
+		node->parent = rChild;
 	}
 
-	lChild->left = node;
-	node->parent = lChild;
-}
+
+void RedBlackTree::rotateRight(NodePtr node){
+	NodePtr lChild = node->left;
+	node->left = lChild->right;
+		if (lChild->right != null) {
+			lChild->right->parent = node;
+		}
+		lChild->parent = node->parent;
+		if (node->parent == NULL) {
+			this->root = lChild;
+		} else if (node == node->parent->right) {
+			node->parent->right = lChild;
+		} else {
+			node->parent->left = lChild;
+		}
+		lChild->right = node;
+		node->parent = lChild;
+	}
+
+void RedBlackTree::fixInsertNode(NodePtr node){
+	NodePtr temp;
+	while (node->parent->color == RED) {
+			if (node->parent == node->parent->parent->right) {
+				temp = node->parent->parent->left; // tempncle
+				if (temp->color == RED) {
+					// case 3.RED
+					temp->color = BLACK;
+					node->parent->color = BLACK;
+					node->parent->parent->color = RED;
+					node = node->parent->parent;
+				} else {
+					if (node == node->parent->left) {
+						// case 3.2.2
+						node = node->parent;
+						rotateRight(node);
+					}
+					// case 3.2.RED
+					node->parent->color = BLACK;
+					node->parent->parent->color = RED;
+					rotateLeft(node->parent->parent);
+				}
+			} else {
+				temp = node->parent->parent->right; // tempncle
+
+				if (temp->color == RED) {
+					// mirror case 3.RED
+					temp->color = BLACK;
+					node->parent->color = BLACK;
+					node->parent->parent->color = RED;
+					node = node->parent->parent;
+				} else {
+					if (node == node->parent->right) {
+						// mirror case 3.2.2
+						node = node->parent;
+						rotateLeft(node);
+					}
+					// mirror case 3.2.RED
+					node->parent->color = BLACK;
+					node->parent->parent->color = RED;
+					rotateRight(node->parent->parent);
+				}
+			}
+			if (node == root) {
+				break;
+			}
+		}
+		root->color = BLACK;
+	}
 
 
 
 void RedBlackTree::insertNode(int value){
-	node* node = new struct node(value);
-	if(root == NULL){
-		root = node;
-	}
-	else{
-		struct node* curr = root;
-		struct node* prev = NULL;
-		while(curr != NULL){
+	NodePtr node = new Node;
+	node->parent = NULL;
+	node->value = value;
+	node->left = null;
+	node->right = null;
+	node->color = RED;
+
+	NodePtr prev = NULL;
+	NodePtr curr = this->root;
+	while (curr != null) {
 			prev = curr;
-			if(value > curr->value){
+			if (node->value < curr->value) {
+				curr = curr->left;
+			} else {
 				curr = curr->right;
 			}
-			else{
-				curr = curr->left;
-			}
 		}
-		if(value > prev->value){
+
+		// prev is parent of curr
+		node->parent = prev;
+		if (prev == NULL) {
+			root = node;
+		} else if (node->value < prev->value) {
+			prev->left = node;
+		} else {
 			prev->right = node;
 		}
-		else{
-			prev->left = node;
+
+		// if new node is a root node, simply return
+		if (node->parent == NULL){
+			node->color = BLACK;
+			return;
 		}
-		node->parent = prev;
+
+		// if the grandparent is null, simply return
+		if (node->parent->parent == NULL) {
+			return;
+		}
+
+		// Fix the tree
+		fixInsertNode(node);
 	}
-	fixInsertNode(node);
-}
 
-void RedBlackTree::fixInsertNode(node *&node){
-	struct node* parent = NULL;
-	struct node* gparent = NULL;
-	while(node != root && getNodeColor(node) == RED && getNodeColor(node->parent) == RED){
-		parent = node->parent;
-		gparent = parent->parent;
-		if(parent == gparent->left){
-			struct node* aunt = gparent->right;
-			if(getNodeColor(aunt) == RED){
-				setNodeColor(aunt, BLACK);
-				setNodeColor(parent, BLACK);
-				setNodeColor(gparent, RED);
-				node = gparent;
-			}
-			else{
-				if(node == parent->right){
-					rotateLeft(parent);
-					node = parent;
-					parent = node->parent;
+
+void RedBlackTree::fixDeleteNode(NodePtr node){
+	NodePtr temp;
+	while (node != root && node->color == BLACK) {
+			if (node == node->parent->left) {
+				temp = node->parent->right;
+				if (temp->color == RED) {
+					// catempe 3.RED
+					temp->color = BLACK;
+					node->parent->color = RED;
+					rotateLeft(node->parent);
+					temp = node->parent->right;
 				}
-				rotateRight(gparent);
-				int tempColor = getNodeColor(parent);
-				setNodeColor(parent, getNodeColor(gparent));
-				setNodeColor(gparent, tempColor);
-				node = parent;
+
+				if (temp->left->color == BLACK && temp->right->color == BLACK) {
+					// catempe 3.2
+					temp->color = RED;
+					node = node->parent;
+				} else {
+					if (temp->right->color == BLACK) {
+						// catempe 3.3
+						temp->left->color = BLACK;
+						temp->color = RED;
+						rotateRight(temp);
+						temp = node->parent->right;
+					}
+
+					// catempe 3.4
+					temp->color = node->parent->color;
+					node->parent->color = BLACK;
+					temp->right->color = BLACK;
+					rotateLeft(node->parent);
+					node = root;
+				}
+			} else {
+				temp = node->parent->left;
+				if (temp->color == RED) {
+					// catempe 3.RED
+					temp->color = BLACK;
+					node->parent->color = RED;
+					rotateRight(node->parent);
+					temp = node->parent->left;
+				}
+
+				if (temp->right->color == BLACK && temp->right->color == BLACK) {
+					// case 3.2
+					temp->color = RED;
+					node = node->parent;
+				} else {
+					if (temp->left->color == BLACK) {
+						// catempe 3.3
+						temp->right->color = BLACK;
+						temp->color = RED;
+						rotateLeft(temp);
+						temp = node->parent->left;
+					}
+
+					// catempe 3.4
+					temp->color = node->parent->color;
+					node->parent->color = BLACK;
+					temp->left->color = BLACK;
+					rotateRight(node->parent);
+					node = root;
+				}
 			}
 		}
-		else{
-			struct node* aunt = gparent->left;
-			if(getNodeColor(aunt) == RED){
-				setNodeColor(aunt, BLACK);
-				setNodeColor(parent, BLACK);
-				setNodeColor(gparent, RED);
-				node = gparent;
-			}
-			else{
-				if(node == parent->left){
-					rotateRight(parent);
-					node = parent;
-					parent = node->parent;
-				}
-				rotateLeft(gparent);
-				int tempColor = getNodeColor(parent);
-				setNodeColor(parent, getNodeColor(gparent));
-				setNodeColor(gparent, tempColor);
-				node = parent;
-			}
-		}
-
+		node->color = BLACK;
 	}
-	setNodeColor(root, BLACK);
 
-}
 
-void RedBlackTree::fixDeleteNode(node *&node){
-	if(node == NULL) return;
-	if(node == root){
-		root = NULL;
+void RedBlackTree::deleteNodeHelper(NodePtr node, int value){
+	NodePtr temp1 = null;
+	NodePtr temp2;
+	NodePtr temp3;
+	while (node != null){
+			if (node->value == value) {
+				temp1 = node;
+			}
+
+			if (node->value <= value) {
+				node = node->right;
+			} else {
+				node = node->left;
+			}
+	}
+
+	if (temp1 == null) {
+		cout<<"Couldn't find value in the tree"<<endl;
 		return;
 	}
-	if (getNodeColor(node) == RED || getNodeColor(node->left) == RED || getNodeColor(node->right) == RED) {
-        struct node* child = node->left != NULL ? node->left : node->right;
 
-        if (node == node->parent->left) {
-            node->parent->left = child;
-            if (child != NULL)
-                child->parent = node->parent;
-            setNodeColor(child, BLACK);
-            delete (node);
-        } else {
-            node->parent->right = child;
-            if (child != NULL)
-                child->parent = node->parent;
-            setNodeColor(child, BLACK);
-            delete (node);
-        }
-    } else {
-        struct node* sibling = NULL;
-        struct node* parent = NULL;
-        struct node* ptr = node;
-        setNodeColor(ptr, DOUBLE_BLACK);
-        while (ptr != root && getNodeColor(ptr) == DOUBLE_BLACK) {
-            parent = ptr->parent;
-            if (ptr == parent->left) {
-                sibling = parent->right;
-                if (getNodeColor(sibling) == RED) {
-                    setNodeColor(sibling, BLACK);
-                    setNodeColor(parent, RED);
-                    rotateLeft(parent);
-                } else {
-                    if (getNodeColor(sibling->left) == BLACK && getNodeColor(sibling->right) == BLACK) {
-                        setNodeColor(sibling, RED);
-                        if(getNodeColor(parent) == RED)
-                            setNodeColor(parent, BLACK);
-                        else
-                            setNodeColor(parent, DOUBLE_BLACK);
-                        ptr = parent;
-                    } else {
-                        if (getNodeColor(sibling->right) == BLACK) {
-                            setNodeColor(sibling->left, BLACK);
-                            setNodeColor(sibling, RED);
-                            rotateRight(sibling);
-                            sibling = parent->right;
-                        }
-                        setNodeColor(sibling, parent->color);
-                        setNodeColor(parent, BLACK);
-                        setNodeColor(sibling->right, BLACK);
-                        rotateLeft(parent);
-                        break;
-                    }
-                }
-            } else {
-                sibling = parent->left;
-                if (getNodeColor(sibling) == RED) {
-                    setNodeColor(sibling, BLACK);
-                    setNodeColor(parent, RED);
-                    rotateRight(parent);
-                } else {
-                    if (getNodeColor(sibling->left) == BLACK && getNodeColor(sibling->right) == BLACK) {
-                        setNodeColor(sibling, RED);
-                        if (getNodeColor(parent) == RED)
-                            setNodeColor(parent, BLACK);
-                        else
-                            setNodeColor(parent, DOUBLE_BLACK);
-                        ptr = parent;
-                    } else {
-                        if (getNodeColor(sibling->left) == BLACK) {
-                            setNodeColor(sibling->right, BLACK);
-                            setNodeColor(sibling, RED);
-                            rotateLeft(sibling);
-                            sibling = parent->left;
-                        }
-                        setNodeColor(sibling, parent->color);
-                        setNodeColor(parent, BLACK);
-                        setNodeColor(sibling->left, BLACK);
-                        rotateRight(parent);
-                        break;
-                    }
-                }
-            }
-        }
-        if (node == node->parent->left)
-            node->parent->left = NULL;
-        else
-            node->parent->right = NULL;
-        delete(node);
-        setNodeColor(root, BLACK);
-    }
+	temp3 = temp1;
+	int temp3_original_color = temp3->color;
+	if (temp1->left == null) {
+		temp2 = temp1->right;
+		rbTransplant(temp1, temp1->right);
+	} else if (temp1->right == null) {
+		temp2 = temp1->left;
+		rbTransplant(temp1, temp1->left);
+	} else {
+		temp3 = getMinValueNode(temp1->right);
+		temp3_original_color = temp3->color;
+		temp2 = temp3->right;
+		if (temp3->parent == temp1) {
+			temp2->parent = temp3;
+		} else {
+			rbTransplant(temp3, temp3->right);
+			temp3->right = temp1->right;
+			temp3->right->parent = temp3;
+		}
 
-}
-
-node* RedBlackTree::deleteNodeHelper(node *& node, int value){
-	if(node == NULL){
-		return node;
+		rbTransplant(temp1, temp3);
+		temp3->left = temp1->left;
+		temp3->left->parent = temp3;
+		temp3->color = temp1->color;
 	}
-	else if(value < node->value){
-		return deleteNodeHelper(node->left, value);
+	delete temp1;
+	if (temp3_original_color == BLACK){
+		fixDeleteNode(temp2);
 	}
-	else if(value > node->value){
-		return deleteNodeHelper(node->right, value);
-	}
-	else if(node->right == NULL || root->left == NULL){
-		return node;
-	}
-	struct node* replacement = getMinValueNode(root->right);
-	node->value = replacement->value;
-	return deleteNodeHelper(node->right, replacement->value);
-	{
-		
-	};
-	fixDeleteNode(node);
-
-}
+} 
 
 void RedBlackTree::deleteNode(int value){
-	struct node* node = deleteNodeHelper(root, value);
-	fixDeleteNode(node);
-
+	deleteNodeHelper(this->root, value);
 }
+	
 
-void RedBlackTree::inOrderTraversal(node *&ptr) {
-    if (ptr == NULL)
+void RedBlackTree::inOrderTraversal(NodePtr node) {
+    if (node == null)
         return;
 
-    inOrderTraversal(ptr->left);
-    cout << ptr->value << " " << ptr->color << endl;
-    inOrderTraversal(ptr->right);
+    inOrderTraversal(node->left);
+    cout << node->value << " " << node->color << endl;
+    inOrderTraversal(node->right);
 }
 
 void RedBlackTree::inOrder() {
     inOrderTraversal(root);
 }
 
-void RedBlackTree::preOrderTraversal(node *&ptr) {
-    if (ptr == NULL)
+void RedBlackTree::preOrderTraversal(NodePtr node) {
+    if (node == null)
         return;
 
-    cout << ptr->value << " " << ptr->color << endl;
-    preOrderTraversal(ptr->left);
-    preOrderTraversal(ptr->right);
+    cout << node->value << " " << node->color << endl;
+    preOrderTraversal(node->left);
+    preOrderTraversal(node->right);
 }
 
 void RedBlackTree::preOrder() {

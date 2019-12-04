@@ -11,49 +11,74 @@
 
 using namespace std;
 
-int readcount;
-pthread_mutex_t rc, wsem;
-queue<int> searchQueue;
-queue<string> modifyQueue;
+int readcount, sqCount, mqCount;
+pthread_mutex_t rc, wsem, rq, output, size_sq, size_mq;
+
 RedBlackTree* redBlackTree;
 
 void initalize(RedBlackTree *rbt){
 	pthread_mutex_init(&rc, NULL);
 	pthread_mutex_init(&wsem, NULL);
+	pthread_mutex_init(&rq, NULL);
+	pthread_mutex_init(&output, NULL);
+	pthread_mutex_init(&size_sq, NULL);
+	pthread_mutex_init(&size_mq, NULL);
 	readcount = 0;
-	modifyQueue = rbt->getModifyQueue();
-	searchQueue = rbt->getSearchQueue();
+	sqCount = rbt->getSearchQueueSize();
+	mqCount = rbt->getModifyQueueSize();
 	redBlackTree = rbt;
 }
 
-void *insertNode(int value){
-
+int insertOrDelete(string desc){
+	if(desc.substr(0,1) == "i") return 0;
+	return 1;
 }
 
-void *deleteNode(int value){
-
+int getValue(string desc){
+	int value = stoi(desc.substr(1,desc.length()-1));
+	return value;
 }
+
 
 
 void *search(void *threadid){
-	while(!searchQueue.empty()){
-		cout<< (long)threadid <<  " reader is trying to enter" << endl;
+	while(true){
 		pthread_mutex_lock(&rc);
 		readcount++;
 		if(readcount == 1){
 			pthread_mutex_lock(&wsem);
 		}
-		cout<< (long)threadid << " reader is inside" << endl;
 		pthread_mutex_unlock(&rc);
-		/*
-		bool exist = redBlackTree->searchNode(searchQueue.front());
+
+
+		pthread_mutex_lock(&size_sq);
+		sqCount--;
+		if(sqCount < 0) {
+			pthread_mutex_unlock(&size_sq);
+			break;
+		}
+		pthread_mutex_unlock(&size_sq);
+
+
+
+		pthread_mutex_lock(&rq);
+		int value =  redBlackTree->popSearchInvocation();
+		pthread_mutex_unlock(&rq);
+		
+
+
+		bool exist = redBlackTree->searchNode(value);
 		if(exist == true){
-			cout << searchQueue.front() << " -> true, performed by thread: " << (long)threadid << endl;
+			pthread_mutex_lock(&output);
+			cout << value << " -> true, performed by thread: " << (long)threadid << endl;
+			pthread_mutex_unlock(&output);
 		}
 		else {
-			cout << searchQueue.front() << " -> false, performed by thread: " << (long)threadid << endl;
-		}*/
-		searchQueue.pop();
+			pthread_mutex_lock(&output);
+			cout << value << " -> false, performed by thread: " << (long)threadid << endl;
+			pthread_mutex_unlock(&output);
+		}
+
 
 		pthread_mutex_lock(&rc);
 		readcount--;
@@ -61,19 +86,36 @@ void *search(void *threadid){
 			pthread_mutex_unlock(&wsem);
 		}
 		pthread_mutex_unlock(&rc);
-		cout<< (long)threadid <<  " reader is done" << endl;
+
 	}
+	pthread_mutex_unlock(&wsem);
 }
 
 void *modify(void *threadid){
-	while(!modifyQueue.empty()){
-		cout<< (long)threadid << " writer is trying to enter" << endl;
+	while(true){
 		pthread_mutex_lock(&wsem);
-		cout<< (long)threadid << " writer has entered" << endl;
-		cout << modifyQueue.front() <<endl;
-		modifyQueue.pop();
+		mqCount--;
+		if(mqCount < 0){
+			pthread_mutex_unlock(&wsem); 
+			break;
+		}
+		string desc = redBlackTree->popModifyInvocation();
+		int operation = insertOrDelete(desc);
+		int value = getValue(desc);
+		if(operation == 0){
+			redBlackTree->insertNode(value);
+			pthread_mutex_lock(&output);
+			cout << value << " inserted, performed by thread: " << (long)threadid << endl;
+			pthread_mutex_unlock(&output);
+
+		}
+		else{
+			redBlackTree->deleteNode(value);
+			pthread_mutex_lock(&output);
+			cout << value << " deleted, performed by thread: " << (long)threadid << endl;
+			pthread_mutex_unlock(&output);
+		}
 		pthread_mutex_unlock(&wsem);   
-		cout<< (long)threadid << " writer is leaving" << endl;
 	}
 
 
@@ -82,9 +124,8 @@ void *modify(void *threadid){
 
 
 int main(){
+	
 	RedBlackTree* rbt = parseInput();
-	//rbt->preOrder();
-	//rbt->inOrder();
 	int writerThreads = rbt->getNumWriters();
 	int readerThreads = rbt->getNumReaders();
 	cout << "writers: " + to_string(rbt->getNumWriters()) << endl;
@@ -92,12 +133,31 @@ int main(){
 	pthread_t writers_Threads[writerThreads];
 	pthread_t readers_Threads[readerThreads];
 	initalize(rbt);
-	for(int i = 0; i < writerThreads; i++){
-		pthread_create(&writers_Threads[i], NULL, search, (void *)i);
-	}
+
 	for(int i = 0; i < readerThreads; i++){
-		pthread_create(&readers_Threads[i], NULL, modify, (void *)i);
+		pthread_create(&readers_Threads[i], NULL, search, (void *)i);
+		
+	} 
+	for(int i = 0; i < writerThreads; i++){
+		pthread_create(&writers_Threads[i], NULL, modify, (void *)i);
+		
 	}
-	pthread_exit(NULL);
+
+	for(int i = 0; i < readerThreads; i++){
+		pthread_join(readers_Threads[i], NULL);
+	}
+
+	for(int i = 0; i < writerThreads; i++){
+		pthread_join(writers_Threads[i], NULL);
+	} 
+
+	cout << "Ria is my love" << endl;
+
+
+
+
+
+
+
 	return 0;
 }
