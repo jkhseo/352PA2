@@ -1,4 +1,4 @@
-45b,1b,f,34r,f,f,97b,f,110r,f,f
+132b,64b,40r,f,f,92r,f,f,164r,150b,f,161r,f,f,188b,179r,f,f,190r,f,f
 Search threads: 3
-Modify threads: 4
-search(1) || delete(97) || insert(80) || insert(85) || search(80)
+Modify threads: 3
+search(132) || delete(7) || insert(15) || insert(20) || search(20) || search(10) || delete(3) || insert(153) || insert(203) || search(20)

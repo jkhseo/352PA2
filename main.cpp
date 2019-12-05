@@ -8,25 +8,29 @@
 #include <fstream>
 #include <vector>
 #include <pthread.h>
+#include <algorithm> 
 
 using namespace std;
 
-int readcount, sqCount, mqCount;
-pthread_mutex_t rc, wsem, rq, output, size_sq, size_mq;
-
+pthread_mutex_t monitor, output; 
+pthread_cond_t canRead, canWrite, canPrint;
+int readcount, sqCount, mqCount, waitingReaders;
+bool busy;
 RedBlackTree* redBlackTree;
 
 void initalize(RedBlackTree *rbt){
-	pthread_mutex_init(&rc, NULL);
-	pthread_mutex_init(&wsem, NULL);
-	pthread_mutex_init(&rq, NULL);
+	pthread_mutex_init(&monitor, NULL);
 	pthread_mutex_init(&output, NULL);
-	pthread_mutex_init(&size_sq, NULL);
-	pthread_mutex_init(&size_mq, NULL);
-	readcount = 0;
+	pthread_cond_init(&canRead, NULL);
+	pthread_cond_init(&canWrite, NULL);
+	pthread_cond_init(&canPrint, NULL);
 	sqCount = rbt->getSearchQueueSize();
 	mqCount = rbt->getModifyQueueSize();
+	readcount = 0;
+	waitingReaders = 0;
+	busy = false;
 	redBlackTree = rbt;
+
 }
 
 int insertOrDelete(string desc){
@@ -43,30 +47,20 @@ int getValue(string desc){
 
 void *search(void *threadid){
 	while(true){
-		pthread_mutex_lock(&rc);
-		readcount++;
-		if(readcount == 1){
-			pthread_mutex_lock(&wsem);
-		}
-		pthread_mutex_unlock(&rc);
-
-
-		pthread_mutex_lock(&size_sq);
+		pthread_mutex_lock(&monitor);
 		sqCount--;
 		if(sqCount < 0) {
-			pthread_mutex_unlock(&size_sq);
+			pthread_mutex_unlock(&monitor);
 			break;
 		}
-		pthread_mutex_unlock(&size_sq);
-
-
-
-		pthread_mutex_lock(&rq);
+		waitingReaders++;
+		while(busy){
+			pthread_cond_wait(&canRead, &monitor);
+		}
+		waitingReaders--;
+		readcount++;
 		int value =  redBlackTree->popSearchInvocation();
-		pthread_mutex_unlock(&rq);
-		
-
-
+		pthread_mutex_unlock(&monitor);
 		bool exist = redBlackTree->searchNode(value);
 		if(exist == true){
 			pthread_mutex_lock(&output);
@@ -78,27 +72,27 @@ void *search(void *threadid){
 			cout << value << " -> false, performed by thread: " << (long)threadid << endl;
 			pthread_mutex_unlock(&output);
 		}
-
-
-		pthread_mutex_lock(&rc);
+		pthread_mutex_lock(&monitor);
 		readcount--;
 		if(readcount == 0){
-			pthread_mutex_unlock(&wsem);
+			pthread_cond_signal(&canWrite);
 		}
-		pthread_mutex_unlock(&rc);
-
+		pthread_mutex_unlock(&monitor);
 	}
-	pthread_mutex_unlock(&wsem);
 }
 
 void *modify(void *threadid){
 	while(true){
-		pthread_mutex_lock(&wsem);
+		pthread_mutex_lock(&monitor);
 		mqCount--;
-		if(mqCount < 0){
-			pthread_mutex_unlock(&wsem); 
+		if(mqCount < 0) {
+			pthread_mutex_unlock(&monitor);
 			break;
 		}
+		while(busy || readcount > 0){
+			pthread_cond_wait(&canWrite, &monitor);
+		}
+		busy = true;
 		string desc = redBlackTree->popModifyInvocation();
 		int operation = insertOrDelete(desc);
 		int value = getValue(desc);
@@ -115,7 +109,15 @@ void *modify(void *threadid){
 			cout << value << " deleted, performed by thread: " << (long)threadid << endl;
 			pthread_mutex_unlock(&output);
 		}
-		pthread_mutex_unlock(&wsem);   
+		busy = false;
+		if(waitingReaders > 0){
+			pthread_cond_signal(&canRead);
+		}
+		else{
+			pthread_cond_signal(&canWrite);
+		}
+		pthread_mutex_unlock(&monitor);
+		
 	}
 
 
@@ -133,16 +135,18 @@ int main(){
 	pthread_t writers_Threads[writerThreads];
 	pthread_t readers_Threads[readerThreads];
 	initalize(rbt);
+	int max = writerThreads > readerThreads ? writerThreads : readerThreads;
 
-	for(int i = 0; i < readerThreads; i++){
-		pthread_create(&readers_Threads[i], NULL, search, (void *)i);
-		
-	} 
-	for(int i = 0; i < writerThreads; i++){
-		pthread_create(&writers_Threads[i], NULL, modify, (void *)i);
-		
-	}
+	for(int i = 0; i < max; i++){
+		if(i < readerThreads){
+			pthread_create(&readers_Threads[i], NULL, search, (void *)i);
+		}
+		if(i < writerThreads){
+			pthread_create(&writers_Threads[i], NULL, modify, (void *)i);	
+		}
 
+		
+	}  
 	for(int i = 0; i < readerThreads; i++){
 		pthread_join(readers_Threads[i], NULL);
 	}
@@ -150,14 +154,6 @@ int main(){
 	for(int i = 0; i < writerThreads; i++){
 		pthread_join(writers_Threads[i], NULL);
 	} 
-
-	cout << "Ria is my love" << endl;
-
-
-
-
-
-
 
 	return 0;
 }

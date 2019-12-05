@@ -397,7 +397,6 @@ void RedBlackTree::deleteNodeHelper(NodePtr node, int value){
 	}
 
 	if (temp1 == null) {
-		cout<<"Couldn't find value in the tree"<<endl;
 		return;
 	}
 
