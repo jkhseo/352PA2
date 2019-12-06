@@ -53,7 +53,7 @@ void RedBlackTree::deconstruct(NodePtr node){
 	}
 	deconstruct(node->left);
 	deconstruct(node->right);
-	deleteNode(node->value);
+	delete node;
 }
 
 void RedBlackTree::deleteNullNode(){

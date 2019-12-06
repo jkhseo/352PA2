@@ -77,45 +77,23 @@ Node* consructTree(vector<string> &preOrderVector, RedBlackTree *rbt){
 	}
 }
 
-Node* constructRBTFromPreOrder(vector<string> &preOrderVector, int index, RedBlackTree *rbt, bool used[]){
+Node* constructRBTFromPreOrder(vector<string> &preOrderVector, int index, RedBlackTree *rbt, vector<bool> &used){
 	if(index >= preOrderVector.size()){
 		return rbt->getNullNode();
+
 	}
-	used[index] = true;
-	struct Node* root = makeNode(preOrderVector[index]);
-	index++;
 	if(preOrderVector[index].size() == 1){
 		used[index] = true;
-		rbt->addNullLeftChild(root);
-		index++;
-		if(index >= preOrderVector.size()){
-			return root;
-		}
-		if(preOrderVector[index].size() == 1){
-			rbt->addNullRightChild(root);
-			used[index] = true;
-			return root;
-		}
-		else{
-			struct Node* right = constructRBTFromPreOrder(preOrderVector, index, rbt, used);
-			root->right = right;
-			right->parent = root;
-			return root;
-		}
-	}
-	if(index >= preOrderVector.size()){
 		return rbt->getNullNode();
 	}
-	struct Node* left = constructRBTFromPreOrder(preOrderVector,index, rbt, used);
+	struct Node* root = makeNode(preOrderVector[index]);
+	used[index] = true;
+	index++;
+	struct Node* left = constructRBTFromPreOrder(preOrderVector, index, rbt, used);
 	root->left = left;
 	left->parent = root;
 	while(used[index] == true){
 		index++;
-	}
-	if(preOrderVector[index].size() == 1){
-		used[index] = true;
-		rbt->addNullRightChild(root);
-		return root; 
 	}
 	struct Node* right = constructRBTFromPreOrder(preOrderVector,index, rbt, used);
 	root->right = right;
@@ -139,10 +117,8 @@ RedBlackTree* parseInput(){
 	if(preOrderVector.size() > 0){
 		arrsize = preOrderVector.size();
 	}
-	bool used[arrsize];
-	for(int i = 0; i < arrsize; i++){
-		used[i] = false;
-	}
+	vector<bool> used(arrsize, false); 
+
 	RedBlackTree* rbt = new RedBlackTree();
 	struct Node* root = constructRBTFromPreOrder(preOrderVector,0, rbt, used);
 	rbt->setRoot(root);
