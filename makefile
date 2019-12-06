@@ -4,7 +4,7 @@ CXXFLAGS = -Wall -g
 
 
 redBlackTree: RedBlackTree.o main.o treeHelper.o
-	$(CXX) $(CXXFLAGS) -o redBlackTree RedBlackTree.o main.o treeHelper.o
+	$(CXX) $(CXXFLAGS) -o redBlackTree RedBlackTree.o main.o treeHelper.o -lpthread
 
 main.o: RedBlackTree.h treeHelper.h main.cpp
 	$(CXX) $(CXXFLAGS) -c main.cpp -lpthread
