@@ -3,17 +3,17 @@ CXXFLAGS = -Wall -g
 
 
 
-redBlackTree: redblacktree.o main.o treehelper.o
-	$(CXX) $(CXXFLAGS) -o redBlackTree redblacktree.o main.o treehelper.o
+redBlackTree: RedBlackTree.o main.o treeHelper.o
+	$(CXX) $(CXXFLAGS) -o redBlackTree RedBlackTree.o main.o treeHelper.o
 
 main.o: RedBlackTree.h treeHelper.h main.cpp
 	$(CXX) $(CXXFLAGS) -c main.cpp
 
 
-redblacktree.o: RedBlackTree.h RedBlackTree.cpp
+RedBlackTree.o: RedBlackTree.h RedBlackTree.cpp
 	$(CXX) $(CXXFLAGS) -c RedBlackTree.cpp
 
-treehelper.o: RedBlackTree.h treeHelper.cpp 
+treeHelper.o: RedBlackTree.h treeHelper.cpp 
 	$(CXX) $(CXXFLAGS) -c treeHelper.cpp
 
 
