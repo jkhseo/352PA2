@@ -1,10 +1,12 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <string>
+#include <string.h>
 #include "RedBlackTree.h"
 #include <iostream>
 #include <fstream>
 #include <queue>
+#include <climits>
 #include <vector>
 
 using namespace std;
