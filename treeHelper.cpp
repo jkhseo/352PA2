@@ -121,7 +121,6 @@ Node* constructRBTFromPreOrder(vector<string> &preOrderVector, int index, RedBla
 	root->right = right;
 	right->parent = root;
 	return root;
-
 }
 
 RedBlackTree* parseInput(){

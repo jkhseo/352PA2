@@ -43,6 +43,23 @@ NodePtr RedBlackTree::getNullNode(){
 	return this->null;
 }
 
+NodePtr RedBlackTree::getRootNode(){
+	return this->root;
+}
+
+void RedBlackTree::deconstruct(NodePtr node){
+	if(node == null){
+		return;
+	}
+	deconstruct(node->left);
+	deconstruct(node->right);
+	deleteNode(node->value);
+}
+
+void RedBlackTree::deleteNullNode(){
+	delete getNullNode();
+}
+
 void RedBlackTree::recreateTree(ofstream &outputFile){
 	string color;
 	stack<NodePtr> nodeStack;

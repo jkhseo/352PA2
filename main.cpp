@@ -161,6 +161,7 @@ int main(){
 	}
 	rbt->recreateTree(outputFile);
 	outputFile.close();
-
+	rbt->deconstruct(rbt->getRootNode());
+	rbt->deleteNullNode();
 	return 0;
 }

@@ -69,6 +69,9 @@ class RedBlackTree{
 		bool modifyQueueEmpty();
 		int getModifyQueueSize();
 		int getSearchQueueSize();
+		void deconstruct(NodePtr );
+		void deleteNullNode();
+		NodePtr getRootNode();
 };
 
 void setNodeColor(NodePtr  , int);
