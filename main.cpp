@@ -9,13 +9,14 @@
 #include <vector>
 #include <pthread.h>
 #include <algorithm> 
+#include <chrono> 
 
 using namespace std;
-
 pthread_mutex_t monitor, output; 
 pthread_cond_t canRead, canWrite, canPrint;
 int readcount, sqCount, mqCount, waitingReaders;
 bool busy;
+vector<string> searchResults;
 RedBlackTree* redBlackTree;
 
 void initalize(RedBlackTree *rbt){
@@ -64,12 +65,14 @@ void *search(void *threadid){
 		bool exist = redBlackTree->searchNode(value);
 		if(exist == true){
 			pthread_mutex_lock(&output);
-			cout << value << " -> true, performed by thread: " << (long)threadid << endl;
+			string temp = to_string(value) + " -> true, performed by thread: " + to_string((long)threadid);
+			searchResults.push_back(temp);
 			pthread_mutex_unlock(&output);
 		}
 		else {
 			pthread_mutex_lock(&output);
-			cout << value << " -> false, performed by thread: " << (long)threadid << endl;
+			string temp = to_string(value) + " -> false, performed by thread: " + to_string((long)threadid);
+			searchResults.push_back(temp);
 			pthread_mutex_unlock(&output);
 		}
 		pthread_mutex_lock(&monitor);
@@ -98,16 +101,10 @@ void *modify(void *threadid){
 		int value = getValue(desc);
 		if(operation == 0){
 			redBlackTree->insertNode(value);
-			pthread_mutex_lock(&output);
-			cout << value << " inserted, performed by thread: " << (long)threadid << endl;
-			pthread_mutex_unlock(&output);
 
 		}
 		else{
 			redBlackTree->deleteNode(value);
-			pthread_mutex_lock(&output);
-			cout << value << " deleted, performed by thread: " << (long)threadid << endl;
-			pthread_mutex_unlock(&output);
 		}
 		busy = false;
 		if(waitingReaders > 0){
@@ -126,7 +123,7 @@ void *modify(void *threadid){
 
 
 int main(){
-	
+	auto start = chrono::steady_clock::now(); 
 	RedBlackTree* rbt = parseInput();
 	int writerThreads = rbt->getNumWriters();
 	int readerThreads = rbt->getNumReaders();
@@ -154,6 +151,16 @@ int main(){
 	for(int i = 0; i < writerThreads; i++){
 		pthread_join(writers_Threads[i], NULL);
 	} 
+	ofstream outputFile;
+	outputFile.open("writeFile.txt");
+	auto end = chrono::steady_clock::now(); 
+	auto diff = end - start;
+	outputFile << chrono::duration <double, milli> (diff).count() << " ms" << endl;
+	for(int i = 0; i < searchResults.size(); i++){
+		outputFile << searchResults[i] << endl;
+	}
+	rbt->recreateTree(outputFile);
+	outputFile.close();
 
 	return 0;
 }

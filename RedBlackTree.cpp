@@ -1,9 +1,11 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <vector>
 #include <queue>
+#include <stack> 
 #include "RedBlackTree.h"
 
 using namespace std;
@@ -14,6 +16,8 @@ int getNodeColor(NodePtr node){
 	if(node == NULL) return BLACK;
 	return node->color;
 }
+
+
 
 void setNodeColor(NodePtr node, int color) {
     if (node == NULL){
@@ -36,6 +40,33 @@ Node::Node(){
 
 NodePtr RedBlackTree::getNullNode(){
 	return this->null;
+}
+
+void RedBlackTree::recreateTree(ofstream &outputFile){
+	string color;
+	stack<NodePtr> nodeStack;
+	nodeStack.push(this->root);
+	while(!nodeStack.empty()){
+		NodePtr temp = nodeStack.top();
+		nodeStack.pop();
+		if(temp == null){
+			outputFile << ",f";
+			continue;
+		}
+		
+		else{
+			color = temp->color==RED ? "r" : "b";
+			if(temp->value == this->root->value){
+				outputFile << to_string(temp->value) + color;
+			}
+			else{
+				outputFile << "," + to_string(temp->value) + color;
+			}
+			nodeStack.push(temp->right);
+			nodeStack.push(temp->left);
+		}
+	}
+
 }
 
 void RedBlackTree::printHelper(NodePtr root, string indent, bool last){

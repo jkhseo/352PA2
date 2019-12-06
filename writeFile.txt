@@ -1,0 +1,6 @@
+1.27395 ms
+37 -> true, performed by thread: 1
+72 -> true, performed by thread: 0
+75 -> false, performed by thread: 0
+31 -> true, performed by thread: 2
+110b,41r,18b,13b,4b,3r,f,f,5r,f,f,14r,13b,f,f,16b,f,17r,f,f,30b,23r,20b,f,22r,f,f,27b,f,f,36r,31b,30r,f,f,33r,f,f,38b,f,40r,f,f,65b,55b,46r,44b,f,f,51b,f,54r,f,f,61r,56b,f,60r,f,f,62b,f,f,75b,89r,72b,66b,f,f,f,73b,72r,f,f,f,80r,79b,f,f,83b,f,100r,f,f,103b,95b,92r,f,f,100r,f,f,105r,104b,f,f,150b,109r,f,f,250r,f,f

@@ -11,7 +11,7 @@ int descToValue(string desc);
 int numOfReadersWriters(string desc);
 int descToColor(string desc);
 Node* makeNode(string desc);
-Node* constructRBTFromPreOrder(vector<string> &preOrderVector, RedBlackTree *rbt);
+Node* constructRBTFromPreOrder(vector<string> &preOrderVector, int index, RedBlackTree *rbt);
 RedBlackTree* parseInput();
 
 

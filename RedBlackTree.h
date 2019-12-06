@@ -43,6 +43,7 @@ class RedBlackTree{
 		void printHelper(NodePtr  , string , bool );
 
 	public:
+		void recreateTree(ofstream &);
 		Node* getNullNode();
 		void addNullLeftChild(NodePtr  );
 		void addNullRightChild(NodePtr  );
