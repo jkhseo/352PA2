@@ -6,6 +6,7 @@
 #include <vector>
 #include <queue>
 #include <stack> 
+#include <climits>
 #include "RedBlackTree.h"
 
 using namespace std;
