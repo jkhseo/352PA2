@@ -171,26 +171,29 @@ int main(int argc,char* argv[]){
 	int writerThreads = rbt->getNumWriters();
 	int readerThreads = rbt->getNumReaders();
 	pthread_t writers_Threads[writerThreads];
+	vector<int> errCodeWriter(writerThreads);
 	pthread_t readers_Threads[readerThreads];
+	vector<int> errCodeReader(readerThreads);
+	
 	initalize(rbt);
 	int max = writerThreads > readerThreads ? writerThreads : readerThreads;
 
 	for(int i = 0; i < max; i++){
 		if(i < readerThreads){
-			pthread_create(&readers_Threads[i], NULL, search, (void *)i);
+			errCodeReader[i] = pthread_create(&readers_Threads[i], NULL, search, (void *)i);
 		}
 		if(i < writerThreads){
-			pthread_create(&writers_Threads[i], NULL, modify, (void *)i);	
+			errCodeWriter[i] = pthread_create(&writers_Threads[i], NULL, modify, (void *)i);	
 		}
 
 		
 	}  
 	for(int i = 0; i < readerThreads; i++){
-		pthread_join(readers_Threads[i], NULL);
+		if(errCodeReader[i] == 0) pthread_join(readers_Threads[i], NULL);
 	}
 
 	for(int i = 0; i < writerThreads; i++){
-		pthread_join(writers_Threads[i], NULL);
+		if(errCodeWriter[i] == 0) pthread_join(writers_Threads[i], NULL);
 	} 
 	auto end = chrono::steady_clock::now(); 
 	auto diff = end - start;
