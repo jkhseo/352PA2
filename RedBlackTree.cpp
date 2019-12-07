@@ -1,3 +1,9 @@
+/**
+ * @author Kyung Seo
+ * @date 12/06/2019
+ * RedBlackTree.cpp is the file for the RedBlackTree class.
+ * Credits to https://algorithmtutor.com/Data-Structures/Tree/Red-Black-Trees/ for teaching me the logic and helping me implement the RBT.
+ */
 #include <unistd.h>
 #include <stdio.h>
 #include <iostream>
@@ -11,15 +17,25 @@
 
 using namespace std;
 
+//enum representing node colors
 enum Color {RED, BLACK};
 
+/**
+ * This functio returns of the color of the node
+ * @param node Node we are looking at 
+ * @return color of the node
+ */
 int getNodeColor(NodePtr node){
 	if(node == NULL) return BLACK;
 	return node->color;
 }
 
 
-
+/**
+ * This function sets the node's color as the specificed color
+ * @param node Node we are interested in
+ * @param color Color we want to change to
+ */
 void setNodeColor(NodePtr node, int color) {
     if (node == NULL){
         return;
@@ -27,7 +43,10 @@ void setNodeColor(NodePtr node, int color) {
     node->color = color;
 }
 
-
+/**
+ * Contructor for the Node struct
+ * @param value Value of the node
+ */
 Node::Node(int value){
 	this->value = value;
 	color = RED;
@@ -36,17 +55,32 @@ Node::Node(int value){
 	right = NULL;
 }
 
+/** 
+ * Empty constructor for the Node struct
+ */
 Node::Node(){
 }
 
+/**
+ * This function returns the node that represents the null node.
+ * @return the null node representation.
+ */
 NodePtr RedBlackTree::getNullNode(){
 	return this->null;
 }
 
+/**
+ * This function returns the root of the RBT.
+ * @return RedBlackTree's root
+ */
 NodePtr RedBlackTree::getRootNode(){
 	return this->root;
 }
 
+/**
+ * This function desconstructs the tree and free all the memory of the nodes by post-order traversal. 
+ * @param node the node object that we are looking at during the traversal. 
+ */
 void RedBlackTree::deconstruct(NodePtr node){
 	if(node == null){
 		return;
@@ -56,10 +90,17 @@ void RedBlackTree::deconstruct(NodePtr node){
 	delete node;
 }
 
+/**
+ * This function deletes the null node representation. 
+ */
 void RedBlackTree::deleteNullNode(){
 	delete getNullNode();
 }
 
+/**
+ * This function writes to the output file the pre-order traversal of the tree.
+ * @param outputFile is the ofstream object that is used to write the tree. 
+ */
 void RedBlackTree::recreateTree(ofstream &outputFile){
 	string color;
 	stack<NodePtr> nodeStack;
@@ -87,6 +128,12 @@ void RedBlackTree::recreateTree(ofstream &outputFile){
 
 }
 
+/**
+ * This fu
+ * @param root
+ * @param indent
+ * @param last
+ */
 void RedBlackTree::printHelper(NodePtr root, string indent, bool last){
 	if (root != null) {
 		   cout<<indent;
@@ -107,43 +154,69 @@ void RedBlackTree::printHelper(NodePtr root, string indent, bool last){
 		
 }
 
-
+/**
+ * This function takes in two nodes and reassign pointers to maintain the structure of the redBlackTree after deletion.
+ * @param n1 node 1 
+ * @param n2 node 2 
+ */
 void RedBlackTree::rbTransplant(NodePtr n1, NodePtr n2){
 	if (n1->parent == NULL) {
-			root = n2;
-		} else if (n1 == n1->parent->left){
-			n1->parent->left = n2;
-		} else {
-			n1->parent->right = n2;
-		}
-		n2->parent = n1->parent;
+		root = n2;
+	} else if (n1 == n1->parent->left){
+		n1->parent->left = n2;
+	} else {
+		n1->parent->right = n2;
+	}
+	n2->parent = n1->parent;
 }
 
+/**
+ *
+ */
 void RedBlackTree::prettyPrint() {
 	    if (root) {
     		printHelper(this->root, "", true);
 	    }
 	}
 
+/**
+ * This function returns the size of the searchQueue.
+ * @return size of searchQueue
+ */
 int RedBlackTree::getSearchQueueSize(){
 	return this->searchQueue.size();
 }
+
+/**
+ * This function returns the size of the modifyQueue.
+ * @return size of modifyQueue
+ */
 int RedBlackTree::getModifyQueueSize(){
 	return this->modifyQueue.size();
 }
 
-
+/**
+ * This function checks of the searchQueue is empty
+ * @return true if searchQueue is empty
+ */
 bool RedBlackTree::searchQueueEmpty(){
 	if(this->searchQueue.empty()) return true;
 	return false;
 }
 
+/**
+ * This function checks of the modifyQueue is empty
+ * @return true if modifyQueue is empty
+ */
 bool RedBlackTree::modifyQueueEmpty(){
 	if(this->modifyQueue.empty()) return true;
 	return false;
 }
 
-
+/**
+ * This function grabs the next value to search and removes that value from the searchQueue. 
+ * @return the next value to search. 
+ */
 int RedBlackTree::popSearchInvocation(){
 	if(this->searchQueueEmpty()) return INT_MIN;
 	int value = this->searchQueue.front();
@@ -151,14 +224,21 @@ int RedBlackTree::popSearchInvocation(){
 	return value;
 }
 
-
-
+/**
+ * This function grabs the next value to either insert or delete and removes that value from the modifyQueue.
+ * @return the value to modify. 
+ */
 string RedBlackTree::popModifyInvocation(){
 	string value = this->modifyQueue.front();
 	this->modifyQueue.pop();
 	return value;
 }
 
+/**
+ * This function searchs the value in the tree. 
+ * @param value is the value we want to search in the tree. 
+ * @return true if exsits and false if it doesn't
+ */
 bool RedBlackTree::searchNode(int value){
 	NodePtr node = root;
 	while(node != NULL){
@@ -175,21 +255,41 @@ bool RedBlackTree::searchNode(int value){
 	return false;
 }
 
+/**
+ * This returns the searchQueue
+ * @return search Queue
+ */
 queue<int> RedBlackTree::getSearchQueue(){
 	return this->searchQueue;
 }
+
+/**
+ * This function returns the modifyQueue
+ * @return modifyQueue
+ */
 queue<string> RedBlackTree::getModifyQueue(){
 	return this->modifyQueue;
 }
 
+/**
+ * This function takes in a value and adds it to the searchQueue
+ * @param value that we want to put into the searchQueue. 
+ */
 void RedBlackTree::addSearchInvocation(int value){
 	this->searchQueue.push(value);
 }
 
+/**
+ * This function takes in the description of the node we want to either insert or delete and adds it to the list. 
+ * @param next is the description of the node that we want to modify next. 
+ */
 void RedBlackTree::addModifyInvocation(string next){
 	this->modifyQueue.push(next);
 }
 
+/**
+ * This function is the constructor for the RedBlackTree. 
+ */
 RedBlackTree::RedBlackTree(){
 	null = new Node;
 	null->color = BLACK;
@@ -198,10 +298,19 @@ RedBlackTree::RedBlackTree(){
 	root = null;
 }
 
+/**
+ * This function takes in a node and sets the root of the RBT.
+ * @param node that we want to set as the new root. 
+ */
 void RedBlackTree::setRoot(NodePtr node){
 	this->root = node;
 }
 
+/**
+ * This function takes in a node and finds the minimum value node within the subtree. 
+ * @param node that we want to search
+ * @return the minimum value node. 
+ */
 NodePtr RedBlackTree::getMinValueNode(NodePtr node){
 	NodePtr temp = node;
 	while(temp->left != null){
@@ -210,22 +319,27 @@ NodePtr RedBlackTree::getMinValueNode(NodePtr node){
 	return temp;
 }
 
-NodePtr RedBlackTree::getMaxValueNode(NodePtr node){
-	NodePtr temp = node;
-	while(temp->right != null){
-		temp = temp->right;
-	}
-	return temp;
-}
 
+/**
+ * Takes in a node and sets its left child as the null node representation. 
+ * @param node
+ */
 void RedBlackTree::addNullLeftChild(NodePtr  node){
 	node->left = null;
 }
 
+/**
+ * Takes in a node and sets its right child as the null node representation. 
+ * @param node
+ */
 void RedBlackTree::addNullRightChild(NodePtr  node){
 	node->right = null;
 }
 
+/**
+ * Takes in a node and performs a left rotation. 
+ * @param node
+ */
 void RedBlackTree::rotateLeft(NodePtr node){
 	NodePtr rChild = node->right;
 	node->right = rChild->left;
@@ -244,7 +358,10 @@ void RedBlackTree::rotateLeft(NodePtr node){
 		node->parent = rChild;
 	}
 
-
+/**
+ * Takes in a node and performs a right rotation. 
+ * @param node
+ */
 void RedBlackTree::rotateRight(NodePtr node){
 	NodePtr lChild = node->left;
 	node->left = lChild->right;
@@ -263,44 +380,42 @@ void RedBlackTree::rotateRight(NodePtr node){
 		node->parent = lChild;
 	}
 
+/**
+ * After inserting a node, we want to restructure an fix the RBT so that the properties of the RBT holds. 
+ * @param node
+ */
 void RedBlackTree::fixInsertNode(NodePtr node){
 	NodePtr temp;
 	while (node->parent->color == RED) {
 			if (node->parent == node->parent->parent->right) {
-				temp = node->parent->parent->left; // tempncle
+				temp = node->parent->parent->left; 
 				if (temp->color == RED) {
-					// case 3.RED
 					temp->color = BLACK;
 					node->parent->color = BLACK;
 					node->parent->parent->color = RED;
 					node = node->parent->parent;
 				} else {
 					if (node == node->parent->left) {
-						// case 3.2.2
 						node = node->parent;
 						rotateRight(node);
 					}
-					// case 3.2.RED
 					node->parent->color = BLACK;
 					node->parent->parent->color = RED;
 					rotateLeft(node->parent->parent);
 				}
 			} else {
-				temp = node->parent->parent->right; // tempncle
+				temp = node->parent->parent->right; 
 
 				if (temp->color == RED) {
-					// mirror case 3.RED
 					temp->color = BLACK;
 					node->parent->color = BLACK;
 					node->parent->parent->color = RED;
 					node = node->parent->parent;
 				} else {
 					if (node == node->parent->right) {
-						// mirror case 3.2.2
 						node = node->parent;
 						rotateLeft(node);
 					}
-					// mirror case 3.2.RED
 					node->parent->color = BLACK;
 					node->parent->parent->color = RED;
 					rotateRight(node->parent->parent);
@@ -314,7 +429,10 @@ void RedBlackTree::fixInsertNode(NodePtr node){
 	}
 
 
-
+/**
+ * This function takes in a value and inserts a new node into the RBT with this value
+ * @param value
+ */
 void RedBlackTree::insertNode(int value){
 	NodePtr node = new Node;
 	node->parent = NULL;
@@ -333,8 +451,6 @@ void RedBlackTree::insertNode(int value){
 				curr = curr->right;
 			}
 		}
-
-		// prev is parent of curr
 		node->parent = prev;
 		if (prev == NULL) {
 			root = node;
@@ -343,14 +459,10 @@ void RedBlackTree::insertNode(int value){
 		} else {
 			prev->right = node;
 		}
-
-		// if new node is a root node, simply return
 		if (node->parent == NULL){
 			node->color = BLACK;
 			return;
 		}
-
-		// if the grandparent is null, simply return
 		if (node->parent->parent == NULL) {
 			return;
 		}
@@ -359,14 +471,16 @@ void RedBlackTree::insertNode(int value){
 		fixInsertNode(node);
 	}
 
-
+/**
+ * After deleting a node, we want to restructure an fix the RBT so that the properties of the RBT holds.  
+ * @param node
+ */
 void RedBlackTree::fixDeleteNode(NodePtr node){
 	NodePtr temp;
 	while (node != root && node->color == BLACK) {
 			if (node == node->parent->left) {
 				temp = node->parent->right;
 				if (temp->color == RED) {
-					// catempe 3.RED
 					temp->color = BLACK;
 					node->parent->color = RED;
 					rotateLeft(node->parent);
@@ -374,19 +488,15 @@ void RedBlackTree::fixDeleteNode(NodePtr node){
 				}
 
 				if (temp->left->color == BLACK && temp->right->color == BLACK) {
-					// catempe 3.2
 					temp->color = RED;
 					node = node->parent;
 				} else {
 					if (temp->right->color == BLACK) {
-						// catempe 3.3
 						temp->left->color = BLACK;
 						temp->color = RED;
 						rotateRight(temp);
 						temp = node->parent->right;
 					}
-
-					// catempe 3.4
 					temp->color = node->parent->color;
 					node->parent->color = BLACK;
 					temp->right->color = BLACK;
@@ -396,15 +506,13 @@ void RedBlackTree::fixDeleteNode(NodePtr node){
 			} else {
 				temp = node->parent->left;
 				if (temp->color == RED) {
-					// catempe 3.RED
 					temp->color = BLACK;
 					node->parent->color = RED;
 					rotateRight(node->parent);
 					temp = node->parent->left;
 				}
 
-				if (temp->right->color == BLACK && temp->right->color == BLACK) {
-					// case 3.2
+				if (temp->right->color == BLACK && temp->left->color == BLACK) {
 					temp->color = RED;
 					node = node->parent;
 				} else {
@@ -428,7 +536,12 @@ void RedBlackTree::fixDeleteNode(NodePtr node){
 		node->color = BLACK;
 	}
 
-
+/**
+ * This is a helper function takes in the root of the RBT and the value we want to delete. If the value 
+ * exists in the tree, we will delete it. 
+ * @param node
+ * @param value
+ */
 void RedBlackTree::deleteNodeHelper(NodePtr node, int value){
 	NodePtr temp1 = null;
 	NodePtr temp2;
@@ -480,49 +593,43 @@ void RedBlackTree::deleteNodeHelper(NodePtr node, int value){
 	}
 } 
 
+/**
+ * This function takes in a value that we want to delete from the tree and calls the delete helper function.
+ * @param value
+ */
 void RedBlackTree::deleteNode(int value){
 	deleteNodeHelper(this->root, value);
 }
-	
 
-void RedBlackTree::inOrderTraversal(NodePtr node) {
-    if (node == null)
-        return;
 
-    inOrderTraversal(node->left);
-    cout << node->value << " " << node->color << endl;
-    inOrderTraversal(node->right);
-}
-
-void RedBlackTree::inOrder() {
-    inOrderTraversal(root);
-}
-
-void RedBlackTree::preOrderTraversal(NodePtr node) {
-    if (node == null)
-        return;
-
-    cout << node->value << " " << node->color << endl;
-    preOrderTraversal(node->left);
-    preOrderTraversal(node->right);
-}
-
-void RedBlackTree::preOrder() {
-    preOrderTraversal(root);
-}
-
+/**
+ * This function takes in an integer and sets it as the number of readerThreads we can have running concurrently. 
+ * @param num_Readers
+ */
 void RedBlackTree::setNumReaders(int num_Readers){
 	this->num_Readers = num_Readers;
 }
 
+/**
+ * This function takes in an integer and sets it as the number of writerThreads we can have running concurrently.
+ * @param num_Writers
+ */
 void RedBlackTree::setNumWriters(int num_Writers){
 	this->num_Writers = num_Writers;
 }
 
+/**
+ * This function returns the number of concurrent ReaderThreads we can have. 
+ * @return
+ */
 int RedBlackTree::getNumReaders(){
 	return this->num_Readers;
 }
 
+/**
+ * This function returns the number of concurrent WriterThreads we can have. 
+ * @return
+ */
 int RedBlackTree::getNumWriters(){
 	return this->num_Writers;
 }

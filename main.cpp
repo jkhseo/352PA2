@@ -1,3 +1,8 @@
+/**
+ * @author Kyung Seo
+ * @date 12/06/2019
+ * helper.h is the header file for helper.cpp
+ */
 #include <unistd.h>
 #include <stdio.h>
 #include <string>
@@ -19,6 +24,10 @@ bool busy;
 vector<string> searchResults;
 RedBlackTree* redBlackTree;
 
+/**
+ * Initalizes all of the global variables needed for the readers writers. 
+ * @param rbt RedBlackTree object that is created from the input
+ */
 void initalize(RedBlackTree *rbt){
 	pthread_mutex_init(&monitor, NULL);
 	pthread_mutex_init(&output, NULL);
@@ -33,19 +42,32 @@ void initalize(RedBlackTree *rbt){
 	redBlackTree = rbt;
 
 }
-
+/**
+ * This function tells us whether we need to insert or delete based off of the description of the modification invocation.
+ * @param desc description of the modifying invocation. 
+ * @return 0 = insert, and 1 = delete. 
+ */
 int insertOrDelete(string desc){
 	if(desc.substr(0,1) == "i") return 0;
 	return 1;
 }
 
+/**
+ * This function tells us the value of the insert/delete based off of the description of the modification invocation. 
+ * @param desc description of the modifying invocation. 
+ * @return value
+ */
 int getValue(string desc){
 	int value = stoi(desc.substr(1,desc.length()-1));
 	return value;
 }
 
 
-
+/**
+ * The search thread enters here to do the searches. 
+ * @param threadid it is the thread number. 
+ * @return
+ */
 void *search(void *threadid){
 	while(true){
 		pthread_mutex_lock(&monitor);
@@ -84,6 +106,11 @@ void *search(void *threadid){
 	}
 }
 
+/**
+ * The modifying thread enteres her to do the insert/delete
+ * @param threadid the number of the thread. 
+ * @return
+ */
 void *modify(void *threadid){
 	while(true){
 		pthread_mutex_lock(&monitor);
@@ -121,14 +148,28 @@ void *modify(void *threadid){
 }
 
 
-
-int main(){
+/**
+ * Main method that parses the inputfile and creates the tree, starts all the threads and writes to the output files. 
+ * @return 
+ */
+int main(int argc,char* argv[]){
 	auto start = chrono::steady_clock::now(); 
-	RedBlackTree* rbt = parseInput();
+	string filename = "RBTinput.txt";
+	if(argc >= 2){
+		filename.assign(argv[1]);
+
+	}
+	ifstream infile;
+	infile.open(filename);
+	if(infile.fail()){
+        cout << "file doesn't exist" << endl;
+        return 0;
+    }
+	ofstream outputFile;
+	outputFile.open("writeFile.txt");
+	RedBlackTree* rbt = parseInput(infile);
 	int writerThreads = rbt->getNumWriters();
 	int readerThreads = rbt->getNumReaders();
-	cout << "writers: " + to_string(rbt->getNumWriters()) << endl;
-	cout << "readers: " + to_string(rbt->getNumReaders()) << endl;
 	pthread_t writers_Threads[writerThreads];
 	pthread_t readers_Threads[readerThreads];
 	initalize(rbt);
@@ -151,8 +192,6 @@ int main(){
 	for(int i = 0; i < writerThreads; i++){
 		pthread_join(writers_Threads[i], NULL);
 	} 
-	ofstream outputFile;
-	outputFile.open("writeFile.txt");
 	auto end = chrono::steady_clock::now(); 
 	auto diff = end - start;
 	outputFile << chrono::duration <double, milli> (diff).count() << " ms" << endl;

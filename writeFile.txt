@@ -1,4 +1,7 @@
-0.524943 ms
-1 -> true, performed by thread: 1
-80 -> true, performed by thread: 2
-45b,1b,f,34r,f,f,85b,80r,f,f,110r,f,f
+1.2678 ms
+1 -> false, performed by thread: 0
+14 -> false, performed by thread: 0
+74 -> false, performed by thread: 1
+100 -> false, performed by thread: 0
+563 -> false, performed by thread: 2
+18b,f,443r,f,f

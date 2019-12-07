@@ -1,0 +1,15 @@
+README
+
+1. Type make in the directory of the folder.
+- redBlackTree executable will be created without any problems.
+2. Run program by typing ./redBlackTree
+- The default input file name is "RBTinput.txt"
+- If you wish to specify the input file name, a batch file run it as ./redBlackTree <filename.txt> where the argument is the exact name of the file. 
+
+
+Notes
+- This code assumes that the input file is exactly correct.
+- The tree is a correct preorder traversal with ',' being the only separator between nodes. 
+- Each input line is one line.
+- Each invocation is separated by " || ". Nothing more or nothing less.
+- Each invocation is either "search(x)", "insert(x)", and "delete(x)" with no spaces in the middle. 

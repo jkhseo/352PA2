@@ -1,3 +1,8 @@
+/**
+ * @author Kyung Seo
+ * @date 12/06/2019
+ * RedBlackTree.h is the header file for RedBlackTree.cpp
+ */
 #ifndef RED_BLACK_TREE_H
 #define RED_BLACK_TREE_H
 
@@ -35,9 +40,6 @@ class RedBlackTree{
 		void fixDeleteNode(NodePtr  );
 		void deleteNodeHelper(NodePtr  , int);
 		Node* getMinValueNode(NodePtr  );
-		Node* getMaxValueNode(NodePtr  );
-		void inOrderTraversal(NodePtr  );
-		void preOrderTraversal(NodePtr  );
 		Node* getNode(NodePtr  , int);
 		void rbTransplant(NodePtr   , NodePtr  );
 		void printHelper(NodePtr  , string , bool );
@@ -53,8 +55,6 @@ class RedBlackTree{
 		RedBlackTree();
 		void insertNode(int);
 		void deleteNode(int);
-		void inOrder();
-		void preOrder();
 		void setNumReaders(int);
 		void setNumWriters(int);
 		int getNumReaders();
